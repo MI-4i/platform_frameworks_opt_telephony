@@ -16,7 +16,6 @@
 
 package com.android.internal.telephony;
 
-import android.app.ActivityManagerNative;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -34,7 +33,6 @@ import android.os.Message;
 import android.os.Registrant;
 import android.os.RegistrantList;
 import android.os.SystemProperties;
-import android.os.UserHandle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.telecom.VideoProfile;
@@ -92,7 +90,6 @@ import org.codeaurora.QtiVideoCallConstants;
 
 public abstract class PhoneBase extends Handler implements Phone {
     private static final String LOG_TAG = "PhoneBase";
-    private static final boolean DBG = true;
 
     private boolean mImsIntentReceiverRegistered = false;
     private BroadcastReceiver mImsIntentReceiver = new BroadcastReceiver() {
@@ -267,8 +264,6 @@ public abstract class PhoneBase extends Handler implements Phone {
     protected static final boolean LCE_PULL_MODE = true;
     protected int mReportInterval = 0;  // ms
     protected int mLceStatus = RILConstants.LCE_NOT_AVAILABLE;
-
-    private boolean mBroadcastEmergencyCallStateChanges = false;
 
     @Override
     public String getPhoneName() {
@@ -2083,7 +2078,7 @@ public abstract class PhoneBase extends Handler implements Phone {
 
     @Override
     public void registerForLineControlInfo(Handler h, int what, Object obj) {
-        mCi.registerForLineControlInfo(h, what, obj);
+        mCi.registerForLineControlInfo( h, what, obj);
     }
 
     @Override
@@ -2103,7 +2098,7 @@ public abstract class PhoneBase extends Handler implements Phone {
 
     @Override
     public void registerForT53AudioControlInfo(Handler h, int what, Object obj) {
-        mCi.registerForT53AudioControlInfo(h, what, obj);
+        mCi.registerForT53AudioControlInfo( h, what, obj);
     }
 
     @Override
@@ -2763,21 +2758,6 @@ public abstract class PhoneBase extends Handler implements Phone {
     protected boolean shallDialOnCircuitSwitch(Bundle extras) {
             return (extras != null && extras.getInt(QtiVideoCallConstants.EXTRA_CALL_DOMAIN,
                     QtiVideoCallConstants.DOMAIN_AUTOMATIC) == QtiVideoCallConstants.DOMAIN_CS);
-    }
-
-    public void sendEmergencyCallStateChange(boolean callActive) {
-        if (mBroadcastEmergencyCallStateChanges) {
-            Intent intent = new Intent(TelephonyIntents.ACTION_EMERGENCY_CALL_STATE_CHANGED);
-            intent.putExtra(PhoneConstants.PHONE_IN_EMERGENCY_CALL, callActive);
-            SubscriptionManager.putPhoneIdAndSubIdExtra(intent, getPhoneId());
-            ActivityManagerNative.broadcastStickyIntent(intent, null, UserHandle.USER_ALL);
-            if (DBG) Rlog.d(LOG_TAG, "sendEmergencyCallStateChange");
-        }
-    }
-
-    @Override
-    public void setBroadcastEmergencyCallStateChanges(boolean broadcast) {
-        mBroadcastEmergencyCallStateChanges = broadcast;
     }
 
     public void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
